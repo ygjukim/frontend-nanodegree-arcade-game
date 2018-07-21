@@ -23,6 +23,7 @@ var Engine = (function(global) {
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
         lastTime;
+    var resetPlayer = false;
 
     canvas.width = 505;
     canvas.height = 606;
@@ -79,7 +80,8 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        if (!checkCollisions())
+            checkSuccess();
     }
 
     /* This is called by the update function and loops through all of the
@@ -93,7 +95,36 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        player.update();
+
+        if (resetPlayer) {
+            player.update(-1);
+            resetPlayer = false;
+        }
+        else {
+            player.update(dt);
+        }
+    }
+
+    /* 
+     */
+    function checkCollisions() {
+        let isCollided = 
+            allEnemies.some(function(enemy) {
+                return player.collide(enemy);
+            });
+        
+        if (isCollided)
+            resetPlayer = true;
+        
+        return isCollided;
+    }
+
+    /* 
+     */
+    function checkSuccess() {
+        if (player.checkSuccess()) {
+            resetPlayer = true;
+        }
     }
 
     /* This function initially draws the "game level", it will then call
@@ -160,6 +191,7 @@ var Engine = (function(global) {
      * handle game reset states - maybe a new game menu or a game over screen
      * those sorts of things. It's only called once by the init() method.
      */
+    global
     function reset() {
         // noop
     }
@@ -182,4 +214,5 @@ var Engine = (function(global) {
      * from within their app.js files.
      */
     global.ctx = ctx;
+
 })(this);
